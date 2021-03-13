@@ -9,7 +9,7 @@ The server MUST be online before opening web client.
 * Communicates with clients using websockets
 * Runs on port 8080.
 
-#####To compile and start server:
+#### To compile and start server:
 1. Navigate to: `/server`
 2. Install dependencies: `npm install`
 3. Compile code: `tsc`
@@ -22,7 +22,7 @@ The server MUST be online before opening web client.
 * Written in TypeScript
 * Communicates with server using websockets
 
-#####To run the client:
+#### To run the client:
 1. Navigate to: `/web`
 2. Install dependencies: `npm install`
 3. Run command: `npm start`
