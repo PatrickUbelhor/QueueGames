@@ -1,9 +1,15 @@
 import './TicTacToe.css';
 import React from 'react';
 
+enum SpaceValue {
+	NONE = '',
+	X = 'X',
+	O = 'O'
+}
+
 interface IGameState {
-	letter: 'X' | 'O';
-	grid: ('' | 'X' | 'O')[];
+	letter: SpaceValue;
+	grid: SpaceValue[];
 }
 
 export default class TicTacToe extends React.Component<any, IGameState> {
@@ -12,9 +18,13 @@ export default class TicTacToe extends React.Component<any, IGameState> {
 		super(props);
 
 		this.state = {
-			letter: 'X',
-			grid: ['', '', '', '', '', '', '', '', '']
-		}
+			letter: SpaceValue.X,
+			grid: [
+				SpaceValue.NONE, SpaceValue.NONE, SpaceValue.NONE,
+				SpaceValue.NONE, SpaceValue.NONE, SpaceValue.NONE,
+				SpaceValue.NONE, SpaceValue.NONE, SpaceValue.NONE
+			]
+		};
 	}
 
 	onSpaceClick = (id: number) => {
@@ -24,7 +34,7 @@ export default class TicTacToe extends React.Component<any, IGameState> {
 
 			return {
 				...prevState,
-				letter: prevState.letter === 'X' ? 'O' : 'X',
+				letter: prevState.letter === SpaceValue.X ? SpaceValue.O : SpaceValue.X,
 				grid: gridCopy
 			};
 		});

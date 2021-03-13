@@ -11,24 +11,6 @@ class App extends React.Component<any, IAppState> {
 
 	constructor(props: any) {
 		super(props);
-
-		this.state = {
-			letter: 'X',
-			grid: ['', '', '', '', '', '', '', '', '']
-		}
-	}
-
-	onSpaceClick = (id: number) => {
-		this.setState((prevState) => {
-			const gridCopy = prevState.grid.slice();
-			gridCopy[id] = prevState.letter;
-
-			return {
-				...prevState,
-				letter: prevState.letter === 'X' ? 'O' : 'X',
-				grid: gridCopy
-			};
-		});
 	}
 
 	render() {
