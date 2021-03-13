@@ -14,6 +14,30 @@ interface IGameProps {
 interface IGameState {
 	letter: SpaceValue;
 	grid: SpaceValue[];
+	hasSubscribed: boolean;
+	ws: WebSocket;
+}
+
+enum RequestMethod {
+	SUB = 'SUBSCRIBE',
+	MSG = 'MESSAGE'
+}
+
+interface TicTacToeAction {
+	letter: SpaceValue;
+	space: number
+}
+
+interface Request {
+	method: RequestMethod;
+	lobby: string;
+	body?: TicTacToeAction;
+}
+
+interface Response {
+	board: SpaceValue[];
+	turn: number;
+	winner: SpaceValue;
 }
 
 export default class TicTacToe extends React.Component<IGameProps, IGameState> {
@@ -28,23 +52,43 @@ export default class TicTacToe extends React.Component<IGameProps, IGameState> {
 				SpaceValue.NONE, SpaceValue.NONE, SpaceValue.NONE,
 				SpaceValue.NONE, SpaceValue.NONE, SpaceValue.NONE,
 				SpaceValue.NONE, SpaceValue.NONE, SpaceValue.NONE
-			]
+			],
+			hasSubscribed: false,
+			ws: null
 		};
 	}
 
-	componentDidUpdate() {
-		if (this.props.ws) {
-			this.props.ws.onmessage = this.onServerMessage;
-		}
-	}
+	componentDidMount() {
+		const ws = new WebSocket('ws://localhost:8080');
 
-	onServerMessage = (event) => {
-		console.log(event.data);
-		const response = JSON.parse(event.data);
+		ws.onopen = () => {
+			console.log('CONNECTED');
+			const request: Request = {
+				method: RequestMethod.SUB,
+				lobby: '0000'
+			}
+			ws.send(JSON.stringify(request));
 
-		this.setState(() => ({
-			grid: response.board as SpaceValue[]
-		}));
+			this.setState((prevState) => ({
+				...prevState,
+				hasSubscribed: true,
+				ws: ws
+			}));
+		};
+
+		ws.onmessage = (event) => {
+			console.log(event.data);
+			const response: Response = JSON.parse(event.data);
+
+			this.setState(() => ({
+				grid: response.board as SpaceValue[]
+			}));
+		};
+
+		ws.onerror = (event) => {
+			console.error('ERROR');
+			console.error(event);
+		};
 	}
 
 	onSpaceClick = (id: number) => {
@@ -60,7 +104,16 @@ export default class TicTacToe extends React.Component<IGameProps, IGameState> {
 			};
 		});
 
-		this.props.ws.send(`{"letter": "${letter}", "space": ${id}}`);
+		const request: Request = {
+			method: RequestMethod.MSG,
+			lobby: '0000',
+			body: {
+				letter: letter,
+				space: id
+			}
+		};
+
+		this.props.ws.send(JSON.stringify(request));
 	}
 
 	render() {
@@ -72,12 +125,15 @@ export default class TicTacToe extends React.Component<IGameProps, IGameState> {
 			</div>
 		));
 
-		return (
+		const loadingDiv = <div>Loading...</div>;
+		const content = (
 			<div className="board-wrapper">
 				<div className="board">
 					{spaces}
 				</div>
 			</div>
 		);
+
+		return this.state.hasSubscribed ? content : loadingDiv;
 	}
 }
