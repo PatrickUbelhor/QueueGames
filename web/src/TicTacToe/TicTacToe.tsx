@@ -7,15 +7,20 @@ enum SpaceValue {
 	O = 'O'
 }
 
+interface IGameProps {
+	ws: WebSocket
+}
+
 interface IGameState {
 	letter: SpaceValue;
 	grid: SpaceValue[];
 }
 
-export default class TicTacToe extends React.Component<any, IGameState> {
+export default class TicTacToe extends React.Component<IGameProps, IGameState> {
 
-	constructor(props: any) {
+	constructor(props) {
 		super(props);
+
 
 		this.state = {
 			letter: SpaceValue.X,
@@ -27,7 +32,23 @@ export default class TicTacToe extends React.Component<any, IGameState> {
 		};
 	}
 
+	componentDidUpdate() {
+		if (this.props.ws) {
+			this.props.ws.onmessage = this.onServerMessage;
+		}
+	}
+
+	onServerMessage = (event) => {
+		console.log(event.data);
+		const response = JSON.parse(event.data);
+
+		this.setState(() => ({
+			grid: response.board as SpaceValue[]
+		}));
+	}
+
 	onSpaceClick = (id: number) => {
+		const letter = this.state.letter;
 		this.setState((prevState) => {
 			const gridCopy = prevState.grid.slice();
 			gridCopy[id] = prevState.letter;
@@ -38,11 +59,13 @@ export default class TicTacToe extends React.Component<any, IGameState> {
 				grid: gridCopy
 			};
 		});
+
+		this.props.ws.send(`{"letter": "${letter}", "space": ${id}}`);
 	}
 
 	render() {
 		const spaces = this.state.grid.map((letter, index) => (
-			<div className="space-wrapper">
+			<div key={index} className="space-wrapper">
 				<div className="space" onClick={() => this.onSpaceClick(index)}>
 					<div className="space-content">{letter}</div>
 				</div>
