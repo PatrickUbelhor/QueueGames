@@ -1,4 +1,5 @@
 import WebSocket, { Data } from 'ws';
+import { Client } from './Client';
 import { TicTacToe } from './TicTacToe';
 
 enum RequestMethod {
@@ -9,19 +10,30 @@ enum RequestMethod {
 interface Request {
 	method: RequestMethod;
 	lobby: string;
-	body: object;
+	body: any;
+}
+
+interface ILobby {
+	game: TicTacToe;
+	clients: Client[];
+}
+
+interface ILobbyMap {
+	[id: string]: ILobby;
 }
 
 const wsserver = new WebSocket.Server({ port: 8080 });
-const clients: WebSocket[] = [];
-const game: TicTacToe = new TicTacToe();
+const lobbies: ILobbyMap = {
+	'0000': {
+		game: new TicTacToe(),
+		clients: []
+	}
+};
 
 function processRequest(ws: WebSocket, request: Request) {
 	switch (request.method) {
 		case RequestMethod.SUB:
-			// TODO: add ws to lobby
-			// TODO: return state?
-			clients.push(ws);
+			processSubscription(ws, request);
 			break;
 		case RequestMethod.MSG:
 			processGameAction(request.body);
@@ -31,12 +43,20 @@ function processRequest(ws: WebSocket, request: Request) {
 	}
 }
 
-function processGameAction(action: any) {
-	game.processAction(action);
-	const gameState = game.getState();
+function processSubscription(ws: WebSocket, request: Request) {
+	const client = new Client(ws);
+	const lobby = lobbies[request.lobby]; // TODO: fail if lobby doesn't exist
+	lobby.clients.push(client);
+	client.send(lobby.game.getState()); // Send initial game state
+}
+
+function processGameAction(request: Request) {
+	const lobby = lobbies[request.lobby];
+	lobby.game.processAction(request.body);
+	const gameState = lobby.game.getState();
 
 	console.log('Sending state to clients');
-	clients.forEach((ws: WebSocket) => ws.send(JSON.stringify(gameState)));
+	lobby.clients.forEach((client: Client) => client.send(gameState));
 }
 
 wsserver.on('connection', (ws: WebSocket) => {

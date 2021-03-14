@@ -91,6 +91,3 @@ export class TicTacToe {
 		return SpaceValue.NONE;
 	}
 }
-
-
-
