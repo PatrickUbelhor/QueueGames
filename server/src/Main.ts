@@ -3,6 +3,8 @@ import { Client } from './Client';
 import { TicTacToe } from './TicTacToe';
 
 enum RequestMethod {
+	CREATE = 'CREATE',
+	JOIN = 'JOIN',
 	SUB = 'SUBSCRIBE',
 	MSG = 'MESSAGE'
 }
@@ -29,18 +31,55 @@ const lobbies: ILobbyMap = {
 		clients: []
 	}
 };
+let nextLobbyId = 1;
 
 function processRequest(ws: WebSocket, request: Request) {
 	switch (request.method) {
+		case RequestMethod.CREATE:
+			createLobby(ws, request);
+			break;
+		case RequestMethod.JOIN:
+			joinLobby(ws, request);
+			break;
 		case RequestMethod.SUB:
 			processSubscription(ws, request);
 			break;
 		case RequestMethod.MSG:
-			processGameAction(request.body);
+			processGameAction(request);
 			break;
 		default:
 			console.error("Invalid method: %s", request.method);
 	}
+}
+
+function createLobby(ws: WebSocket, request: Request) {
+	const client = new Client(ws);
+	const lobbyId = nextLobbyId.toString().padStart(4, '0');
+	const lobby: ILobby = {
+		game: new TicTacToe(),
+		clients: [client]
+	};
+
+	const initState = lobby.game.addPlayer(client);
+
+	lobbies[lobbyId] = lobby;
+	client.send({
+		lobby: lobbyId,
+		state: initState
+	});
+}
+
+function joinLobby(ws: WebSocket, request: Request) {
+	const client = new Client(ws);
+	const lobby = lobbies[request.lobby]; // TODO: fail if lobby doesn't exist
+	const initState = lobby.game.addPlayer(client);
+
+	lobby.clients.push(client);
+
+	client.send({
+		lobby: request.lobby,
+		state: initState
+	});
 }
 
 function processSubscription(ws: WebSocket, request: Request) {
@@ -51,6 +90,7 @@ function processSubscription(ws: WebSocket, request: Request) {
 }
 
 function processGameAction(request: Request) {
+	console.log('Action in lobby %s', request.lobby);
 	const lobby = lobbies[request.lobby];
 	lobby.game.processAction(request.body);
 	const gameState = lobby.game.getState();

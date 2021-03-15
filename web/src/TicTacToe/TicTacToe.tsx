@@ -8,17 +8,20 @@ enum SpaceValue {
 }
 
 interface IGameProps {
-	ws: WebSocket
+	// ws: WebSocket
 }
 
 interface IGameState {
 	letter: SpaceValue;
 	grid: SpaceValue[];
 	hasSubscribed: boolean;
+	lobby: string;
 	ws: WebSocket;
 }
 
 enum RequestMethod {
+	CREATE = 'CREATE',
+	JOIN = 'JOIN',
 	SUB = 'SUBSCRIBE',
 	MSG = 'MESSAGE'
 }
@@ -54,6 +57,7 @@ export default class TicTacToe extends React.Component<IGameProps, IGameState> {
 				SpaceValue.NONE, SpaceValue.NONE, SpaceValue.NONE
 			],
 			hasSubscribed: false,
+			lobby: null,
 			ws: null
 		};
 	}
@@ -63,25 +67,32 @@ export default class TicTacToe extends React.Component<IGameProps, IGameState> {
 
 		ws.onopen = () => {
 			console.log('CONNECTED');
-			const request: Request = {
-				method: RequestMethod.SUB,
-				lobby: '0000'
-			}
-			ws.send(JSON.stringify(request));
-
-			this.setState((prevState) => ({
-				...prevState,
-				hasSubscribed: true,
+			this.setState(() => ({
 				ws: ws
 			}));
 		};
 
 		ws.onmessage = (event) => {
-			console.log(event.data);
-			const response: Response = JSON.parse(event.data);
+			console.log('MESSAGE');
 
+			// Process game action
+			if (this.state.hasSubscribed) {
+				const response: Response = JSON.parse(event.data);
+
+				this.setState(() => ({
+					grid: response.board as SpaceValue[]
+				}));
+
+				return;
+			}
+
+			// Initialize game state
+			const response = JSON.parse(event.data);
 			this.setState(() => ({
-				grid: response.board as SpaceValue[]
+				lobby: response.lobby,
+				hasSubscribed: true,
+				letter: response.state.player,
+				grid: response.state.board
 			}));
 		};
 
@@ -89,6 +100,24 @@ export default class TicTacToe extends React.Component<IGameProps, IGameState> {
 			console.error('ERROR');
 			console.error(event);
 		};
+	}
+
+	onCreateClick = () => {
+		const request: Request = {
+			method: RequestMethod.CREATE,
+			lobby: ''
+		};
+
+		this.state.ws.send(JSON.stringify(request));
+	}
+
+	onJoinClick = () => {
+		const request: Request = {
+			method: RequestMethod.JOIN,
+			lobby: '0001'
+		};
+
+		this.state.ws.send(JSON.stringify(request));
 	}
 
 	onSpaceClick = (id: number) => {
@@ -99,21 +128,20 @@ export default class TicTacToe extends React.Component<IGameProps, IGameState> {
 
 			return {
 				...prevState,
-				letter: prevState.letter === SpaceValue.X ? SpaceValue.O : SpaceValue.X,
 				grid: gridCopy
 			};
 		});
 
 		const request: Request = {
 			method: RequestMethod.MSG,
-			lobby: '0000',
+			lobby: this.state.lobby,
 			body: {
 				letter: letter,
 				space: id
 			}
 		};
 
-		this.props.ws.send(JSON.stringify(request));
+		this.state.ws.send(JSON.stringify(request));
 	}
 
 	render() {
@@ -126,14 +154,30 @@ export default class TicTacToe extends React.Component<IGameProps, IGameState> {
 		));
 
 		const loadingDiv = <div>Loading...</div>;
-		const content = (
-			<div className="board-wrapper">
-				<div className="board">
-					{spaces}
-				</div>
+		const buttons = (
+			<div>
+				<button onClick={this.onCreateClick}>Create</button>
+				<button onClick={this.onJoinClick}>Join</button>
 			</div>
 		);
+		const content = (
+			<>
+				<div className="board-wrapper">
+					<div className="board">
+						{spaces}
+					</div>
+				</div>
+			</>
+		);
 
-		return this.state.hasSubscribed ? content : loadingDiv;
+		if (this.state.ws == null) {
+			return loadingDiv;
+		}
+
+		if (this.state.hasSubscribed) {
+			return content;
+		}
+
+		return buttons;
 	}
 }

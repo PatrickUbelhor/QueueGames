@@ -1,8 +1,13 @@
+import { Client } from './Client';
 
 export enum SpaceValue {
 	NONE = '',
 	X = 'X',
 	O = 'O'
+}
+
+export interface ITicTacToeJoinInfo extends ITicTacToeState {
+	player: SpaceValue;
 }
 
 export interface ITicTacToeState {
@@ -21,7 +26,9 @@ export class TicTacToe {
 	private readonly board: SpaceValue[];
 	private turn: number;
 	private winner: SpaceValue;
-	
+	private playerX: Client = null;
+	private playerO: Client = null;
+
 	constructor() {
 		this.board = [
 			SpaceValue.NONE, SpaceValue.NONE, SpaceValue.NONE,
@@ -30,6 +37,31 @@ export class TicTacToe {
 		];
 		this.turn = 0;
 		this.winner = SpaceValue.NONE;
+	}
+
+	public addPlayer = (client: Client): ITicTacToeJoinInfo => {
+		if (this.playerX == null) {
+			this.playerX = client;
+
+			return {
+				player: SpaceValue.X,
+				...this.getState()
+			};
+		}
+
+		if (this.playerO == null) {
+			this.playerO = client;
+
+			return {
+				player: SpaceValue.O,
+				...this.getState()
+			};
+		}
+
+		return {
+			player: SpaceValue.NONE,
+			...this.getState()
+		};
 	}
 	
 	public processAction = (action: ITicTacToeAction): void => {
