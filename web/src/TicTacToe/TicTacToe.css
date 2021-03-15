@@ -1,5 +1,37 @@
+.ttt-wrapper {
+	padding: 64px;
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.create-button {
+	margin-bottom: 8px;
+}
+
+.join-wrapper {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+}
+
+.join-input {
+	width: 4em;
+}
+
+.join-button {
+	margin-left: 8px;
+}
+
+.lobby-code {
+	font-size: 24px;
+	font-weight: 600;
+	margin-bottom: 64px;
+}
+
 .board-wrapper {
-	margin: auto;
+	/*margin: auto;*/
 	padding: 48px;
 	border-radius: 16px;
 	height: fit-content;

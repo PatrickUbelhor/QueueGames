@@ -5,7 +5,6 @@ import { TicTacToe } from './TicTacToe';
 enum RequestMethod {
 	CREATE = 'CREATE',
 	JOIN = 'JOIN',
-	SUB = 'SUBSCRIBE',
 	MSG = 'MESSAGE'
 }
 
@@ -25,13 +24,8 @@ interface ILobbyMap {
 }
 
 const wsserver = new WebSocket.Server({ port: 8080 });
-const lobbies: ILobbyMap = {
-	'0000': {
-		game: new TicTacToe(),
-		clients: []
-	}
-};
-let nextLobbyId = 1;
+const lobbies: ILobbyMap = {};
+let nextLobbyId = 0;
 
 function processRequest(ws: WebSocket, request: Request) {
 	switch (request.method) {
@@ -40,9 +34,6 @@ function processRequest(ws: WebSocket, request: Request) {
 			break;
 		case RequestMethod.JOIN:
 			joinLobby(ws, request);
-			break;
-		case RequestMethod.SUB:
-			processSubscription(ws, request);
 			break;
 		case RequestMethod.MSG:
 			processGameAction(request);
@@ -55,6 +46,8 @@ function processRequest(ws: WebSocket, request: Request) {
 function createLobby(ws: WebSocket, request: Request) {
 	const client = new Client(ws);
 	const lobbyId = nextLobbyId.toString().padStart(4, '0');
+	nextLobbyId++;
+
 	const lobby: ILobby = {
 		game: new TicTacToe(),
 		clients: [client]
@@ -80,13 +73,6 @@ function joinLobby(ws: WebSocket, request: Request) {
 		lobby: request.lobby,
 		state: initState
 	});
-}
-
-function processSubscription(ws: WebSocket, request: Request) {
-	const client = new Client(ws);
-	const lobby = lobbies[request.lobby]; // TODO: fail if lobby doesn't exist
-	lobby.clients.push(client);
-	client.send(lobby.game.getState()); // Send initial game state
 }
 
 function processGameAction(request: Request) {

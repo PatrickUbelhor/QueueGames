@@ -17,12 +17,12 @@ interface IGameState {
 	hasSubscribed: boolean;
 	lobby: string;
 	ws: WebSocket;
+	codeInput: string;
 }
 
 enum RequestMethod {
 	CREATE = 'CREATE',
 	JOIN = 'JOIN',
-	SUB = 'SUBSCRIBE',
 	MSG = 'MESSAGE'
 }
 
@@ -48,7 +48,6 @@ export default class TicTacToe extends React.Component<IGameProps, IGameState> {
 	constructor(props) {
 		super(props);
 
-
 		this.state = {
 			letter: SpaceValue.X,
 			grid: [
@@ -58,7 +57,8 @@ export default class TicTacToe extends React.Component<IGameProps, IGameState> {
 			],
 			hasSubscribed: false,
 			lobby: null,
-			ws: null
+			ws: null,
+			codeInput: ''
 		};
 	}
 
@@ -92,7 +92,7 @@ export default class TicTacToe extends React.Component<IGameProps, IGameState> {
 				lobby: response.lobby,
 				hasSubscribed: true,
 				letter: response.state.player,
-				grid: response.state.board
+				grid: response.state.board,
 			}));
 		};
 
@@ -114,7 +114,7 @@ export default class TicTacToe extends React.Component<IGameProps, IGameState> {
 	onJoinClick = () => {
 		const request: Request = {
 			method: RequestMethod.JOIN,
-			lobby: '0001'
+			lobby: this.state.codeInput
 		};
 
 		this.state.ws.send(JSON.stringify(request));
@@ -144,6 +144,12 @@ export default class TicTacToe extends React.Component<IGameProps, IGameState> {
 		this.state.ws.send(JSON.stringify(request));
 	}
 
+	onInputChange = (event) => {
+		this.setState(() => ({
+			codeInput: event.target.value
+		}));
+	}
+
 	render() {
 		const spaces = this.state.grid.map((letter, index) => (
 			<div key={index} className="space-wrapper">
@@ -155,19 +161,23 @@ export default class TicTacToe extends React.Component<IGameProps, IGameState> {
 
 		const loadingDiv = <div>Loading...</div>;
 		const buttons = (
-			<div>
-				<button onClick={this.onCreateClick}>Create</button>
-				<button onClick={this.onJoinClick}>Join</button>
+			<div className="ttt-wrapper">
+				<button className="create-button" onClick={this.onCreateClick}>Create</button>
+				<div className="join-wrapper">
+					<input className="join-input" value={this.state.codeInput} onChange={this.onInputChange}/>
+					<button className="join-button" onClick={this.onJoinClick}>Join</button>
+				</div>
 			</div>
 		);
 		const content = (
-			<>
+			<div className="ttt-wrapper">
+				<div className="lobby-code">Your lobby code is: "{this.state.lobby}"</div>
 				<div className="board-wrapper">
 					<div className="board">
 						{spaces}
 					</div>
 				</div>
-			</>
+			</div>
 		);
 
 		if (this.state.ws == null) {
