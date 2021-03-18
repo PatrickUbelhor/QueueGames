@@ -57,7 +57,12 @@ class ConnectedApp extends React.Component<any, any> {
 					<div className="button-wrapper">
 						<button className="create-button" onClick={this.props.createLobby}>Create</button>
 						<div className="join-wrapper">
-							<input className="join-input" value={this.state.lobbyCodeInput} onChange={this.onInputChange}/>
+							<input
+								className="join-input"
+								value={this.state.lobbyCodeInput}
+								onChange={this.onInputChange}
+								maxLength={4}
+							/>
 							<button className="join-button" onClick={this.onJoinClick}>Join</button>
 						</div>
 					</div>

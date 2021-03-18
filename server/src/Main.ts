@@ -23,7 +23,10 @@ interface ILobbyMap {
 	[id: string]: ILobby;
 }
 
-const wsserver = new WebSocket.Server({ port: 8080 });
+const wsserver = new WebSocket.Server({
+	port: 8080,
+	path: '/app'
+});
 const lobbies: ILobbyMap = {};
 let nextLobbyId = 0;
 
@@ -63,6 +66,8 @@ function createLobby(ws: WebSocket, request: Request) {
 }
 
 function joinLobby(ws: WebSocket, request: Request) {
+	if (!lobbies.hasOwnProperty(request.lobby)) return;
+
 	const client = new Client(ws);
 	const lobby = lobbies[request.lobby]; // TODO: fail if lobby doesn't exist
 	const initState = lobby.game.addPlayer(client);

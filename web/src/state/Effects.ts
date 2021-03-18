@@ -7,7 +7,7 @@ type GetState = () => IAppState;
 
 export const connectWebsocket = () => async (dispatch: Dispatch<Action>, getState: GetState) => {
 
-	const ws = new WebSocket('ws://localhost:8080');
+	const ws = new WebSocket('wss://games.patrickubelhor.com:443/app');
 	ws.onopen = () => {
 		dispatch(setWebsocketSuccess(ws));
 	};
