@@ -21,10 +21,6 @@ function mapDispatchToProps(dispatch) {
 
 class ConnectedTicTacToe extends React.Component<any, any> {
 
-	constructor(props) {
-		super(props);
-	}
-
 	render() {
 		const spaces = this.props.grid.map((letter, index) => (
 			<div key={index} className="space-wrapper">
@@ -35,11 +31,9 @@ class ConnectedTicTacToe extends React.Component<any, any> {
 		));
 
 		return (
-			<div className="ttt-wrapper">
-				<div className="board-wrapper">
-					<div className="board">
-						{spaces}
-					</div>
+			<div className="board-wrapper">
+				<div className="board">
+					{spaces}
 				</div>
 			</div>
 		);
