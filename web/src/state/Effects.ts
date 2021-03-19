@@ -1,12 +1,12 @@
 import { Dispatch } from 'react';
 import { Action, initGame, setWebsocketSuccess, updateGame } from './Actions';
-import { IInitTicTacToe, Request, RequestMethod, Response } from './Game.models';
+import { IInitTicTacToe, Request, RequestMethod } from './Game.models';
+import { IServerResponse, IServerResponseError, IServerResponseInit, IServerResponseUpdate, MessageType } from './Response.models';
 import { IAppState } from './State.models';
 
 type GetState = () => IAppState;
 
 export const connectWebsocket = () => async (dispatch: Dispatch<Action>, getState: GetState) => {
-
 	const ws = new WebSocket('wss://games.patrickubelhor.com:443/app');
 	ws.onopen = () => {
 		dispatch(setWebsocketSuccess(ws));
@@ -15,22 +15,20 @@ export const connectWebsocket = () => async (dispatch: Dispatch<Action>, getStat
 	ws.onmessage = (event) => {
 		console.log('MESSAGE');
 
-		// If in a game, process action
-		if (!!getState().lobby) {
-			const response: Response = JSON.parse(event.data);
-			dispatch(updateGame(response.board));
-
-			return;
+		const response: IServerResponse = JSON.parse(event.data);
+		switch (response.type) {
+			case MessageType.INIT:
+				handleGameInitResponse(response, dispatch);
+				break;
+			case MessageType.UPDATE:
+				handleGameUpdateResponse(response, dispatch);
+				break;
+			case MessageType.ERROR:
+				handleGameErrorResponse(response);
+				break;
+			default:
+				console.error("Received request I don't understand");
 		}
-
-		// Not in game -> initialize game state
-		const response = JSON.parse(event.data);
-		const initState: IInitTicTacToe = {
-			lobby: response.lobby,
-			letter: response.state.player,
-			grid: response.state.board
-		};
-		dispatch(initGame(initState));
 	};
 
 	ws.onerror = (event) => {
@@ -38,6 +36,24 @@ export const connectWebsocket = () => async (dispatch: Dispatch<Action>, getStat
 		console.error(event);
 	};
 };
+
+function handleGameInitResponse(response: IServerResponseInit, dispatch: Dispatch<Action>) {
+	const initialState: IInitTicTacToe = {
+		lobby: response.lobby,
+		letter: response.state.player,
+		grid: response.state.board
+	};
+	dispatch(initGame(initialState));
+}
+
+function handleGameUpdateResponse(response: IServerResponseUpdate, dispatch: Dispatch<Action>) {
+	dispatch(updateGame(response.state.board));
+}
+
+function handleGameErrorResponse(response: IServerResponseError) {
+	console.error('Error %d', response.code);
+}
+
 
 export const createLobby = () => async (dispatch: Dispatch<Action>, getState: GetState) => {
 	const ws = getState().ws;
@@ -50,7 +66,8 @@ export const createLobby = () => async (dispatch: Dispatch<Action>, getState: Ge
 	ws.send(JSON.stringify(request));
 };
 
-export const joinLobby = (lobbyCode: string) => async (dispatch, getState: GetState) => {
+
+export const joinLobby = (lobbyCode: string) => async (dispatch: Dispatch<Action>, getState: GetState) => {
 	const ws = getState().ws;
 	const request: Request = {
 		method: RequestMethod.JOIN,
@@ -58,7 +75,8 @@ export const joinLobby = (lobbyCode: string) => async (dispatch, getState: GetSt
 	};
 
 	ws.send(JSON.stringify(request));
-}
+};
+
 
 export const performGameAction = (spaceId: number) => async (dispatch: Dispatch<Action>, getState: GetState) => {
 	const gridCopy = getState().grid.slice();
@@ -77,4 +95,4 @@ export const performGameAction = (spaceId: number) => async (dispatch: Dispatch<
 	};
 
 	getState().ws.send(JSON.stringify(request));
-}
+};

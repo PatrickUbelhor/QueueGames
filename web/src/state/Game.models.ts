@@ -21,14 +21,18 @@ export interface Request {
 	body?: TicTacToeAction;
 }
 
-export interface Response {
+export interface IInitTicTacToe {
+	lobby: string;
+	letter: SpaceValue;
+	grid: SpaceValue[];
+}
+
+export interface ITicTacToeState {
 	board: SpaceValue[];
 	turn: number;
 	winner: SpaceValue;
 }
 
-export interface IInitTicTacToe {
-	lobby: string;
-	letter: SpaceValue;
-	grid: SpaceValue[];
+export interface ITicTacToeJoinInfo extends ITicTacToeState {
+	player: SpaceValue;
 }

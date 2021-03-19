@@ -1,5 +1,6 @@
 import WebSocket, { Data } from 'ws';
 import { Client } from './Client';
+import { IServerResponseInit, IServerResponseUpdate, MessageType } from './Response';
 import { TicTacToe } from './TicTacToe';
 
 enum RequestMethod {
@@ -57,37 +58,45 @@ function createLobby(ws: WebSocket, request: Request) {
 	};
 
 	const initState = lobby.game.addPlayer(client);
-
-	lobbies[lobbyId] = lobby;
-	client.send({
+	const response: IServerResponseInit = {
+		type: MessageType.INIT,
 		lobby: lobbyId,
 		state: initState
-	});
+	};
+
+	lobbies[lobbyId] = lobby;
+	client.send(response);
 }
 
 function joinLobby(ws: WebSocket, request: Request) {
 	if (!lobbies.hasOwnProperty(request.lobby)) return;
 
 	const client = new Client(ws);
-	const lobby = lobbies[request.lobby]; // TODO: fail if lobby doesn't exist
+	const lobby = lobbies[request.lobby];
 	const initState = lobby.game.addPlayer(client);
-
-	lobby.clients.push(client);
-
-	client.send({
+	const response: IServerResponseInit = {
+		type: MessageType.INIT,
 		lobby: request.lobby,
 		state: initState
-	});
+	};
+
+	lobby.clients.push(client);
+	client.send(response);
 }
 
 function processGameAction(request: Request) {
 	console.log('Action in lobby %s', request.lobby);
 	const lobby = lobbies[request.lobby];
-	lobby.game.processAction(request.body);
-	const gameState = lobby.game.getState();
+	const gameState = lobby.game.processAction(request.body);
+
+	const response: IServerResponseUpdate = {
+		type: MessageType.UPDATE,
+		lobby: request.lobby,
+		state: gameState
+	};
 
 	console.log('Sending state to clients');
-	lobby.clients.forEach((client: Client) => client.send(gameState));
+	lobby.clients.forEach((client: Client) => client.send(response));
 }
 
 wsserver.on('connection', (ws: WebSocket) => {

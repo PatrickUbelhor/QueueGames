@@ -1,3 +1,4 @@
+import { IServerResponse } from './Response';
 import WebSocket from 'ws';
 
 export class Client {
@@ -13,7 +14,7 @@ export class Client {
 		Client.id++;
 	}
 
-	public send(data: any) {
+	public send(data: IServerResponse) {
 		this.ws.send(JSON.stringify(data));
 	}
 

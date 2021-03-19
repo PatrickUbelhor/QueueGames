@@ -64,10 +64,12 @@ export class TicTacToe {
 		};
 	}
 	
-	public processAction = (action: ITicTacToeAction): void => {
+	public processAction = (action: ITicTacToeAction): ITicTacToeState => {
 		this.board[action.space] = action.letter;
 		this.turn++;
 		this.winner = this.detectWinner();
+
+		return this.getState();
 	}
 
 	public getState = (): ITicTacToeState => {
