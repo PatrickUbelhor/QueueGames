@@ -24,7 +24,7 @@ export const connectWebsocket = () => async (dispatch: Dispatch<Action>, getStat
 				handleGameUpdateResponse(response, dispatch);
 				break;
 			case MessageType.ERROR:
-				handleGameErrorResponse(response);
+				handleGameErrorResponse(response, dispatch);
 				break;
 			default:
 				console.error("Received request I don't understand");
@@ -50,7 +50,8 @@ function handleGameUpdateResponse(response: IServerResponseUpdate, dispatch: Dis
 	dispatch(updateGame(response.state.board));
 }
 
-function handleGameErrorResponse(response: IServerResponseError) {
+function handleGameErrorResponse(response: IServerResponseError, dispatch: Dispatch<Action>) {
+	dispatch(updateGame(response.state.board));
 	console.error('Error %d', response.code);
 }
 
