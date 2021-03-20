@@ -31,4 +31,5 @@ export interface IServerResponseUpdate extends IAbstractServerResponse {
 export interface IServerResponseError extends IAbstractServerResponse {
 	type: MessageType.ERROR;
 	code: number;
+	state: ITicTacToeState;
 }

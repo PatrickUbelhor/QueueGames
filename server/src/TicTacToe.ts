@@ -64,12 +64,25 @@ export class TicTacToe {
 		};
 	}
 	
-	public processAction = (action: ITicTacToeAction): ITicTacToeState => {
-		this.board[action.space] = action.letter;
-		this.turn++;
-		this.winner = this.detectWinner();
+	public processAction = (client: Client, action: ITicTacToeAction): [boolean, ITicTacToeState] => {
+		// Even turns are for X, odd turns are for O
+		if (client.id === this.playerX.id && this.turn % 2 === 0) {
+			this.board[action.space] = SpaceValue.X;
+			this.turn++;
+			this.winner = this.detectWinner();
 
-		return this.getState();
+			return [true, this.getState()];
+		}
+
+		if (client.id === this.playerO.id && this.turn % 2 === 1) {
+			this.board[action.space] = SpaceValue.O;
+			this.turn++;
+			this.winner = this.detectWinner();
+
+			return [true, this.getState()];
+		}
+
+		return [false, this.getState()];
 	}
 
 	public getState = (): ITicTacToeState => {
