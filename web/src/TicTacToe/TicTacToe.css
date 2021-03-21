@@ -37,7 +37,7 @@
 	transition: background-color 100ms ease-in-out;
 }
 
-.space:hover {
+.space__empty:hover {
 	background-color: rgba(140, 80, 240, 0.6);
 	cursor: pointer;
 }

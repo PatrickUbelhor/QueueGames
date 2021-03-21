@@ -1,4 +1,4 @@
-import { IInitTicTacToe, SpaceValue } from './Game.models';
+import { IInitTicTacToe, ITicTacToeState } from './Game.models';
 
 export interface Action {
 	type: Actions;
@@ -27,7 +27,7 @@ export const initGame = (data: IInitTicTacToe): Action => ({
 	payload: data
 });
 
-export const updateGame = (board: SpaceValue[]): Action => ({
+export const updateGame = (data: ITicTacToeState): Action => ({
 	type: Actions.SET_GAME_STATE,
-	payload: board
+	payload: data
 });

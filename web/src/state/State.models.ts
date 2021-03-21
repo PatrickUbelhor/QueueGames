@@ -7,4 +7,5 @@ export interface IAppState {
 	isSubscribed: boolean;
 	letter: SpaceValue;
 	grid: SpaceValue[];
+	turn: number;
 }

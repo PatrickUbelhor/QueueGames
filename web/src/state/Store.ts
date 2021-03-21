@@ -15,6 +15,7 @@ const INITIAL_STATE: IAppState = {
 		SpaceValue.NONE, SpaceValue.NONE, SpaceValue.NONE,
 		SpaceValue.NONE, SpaceValue.NONE, SpaceValue.NONE
 	],
+	turn: 0
 };
 
 const reducer = function (state: IAppState = INITIAL_STATE, action: Action): IAppState {
@@ -36,12 +37,14 @@ const reducer = function (state: IAppState = INITIAL_STATE, action: Action): IAp
 				lobby: action.payload.lobby,
 				letter: action.payload.letter,
 				grid: action.payload.grid,
+				turn: action.payload.turn,
 				isSubscribed: true
 			};
 		case Actions.SET_GAME_STATE:
 			return {
 				...state,
-				grid: action.payload
+				grid: action.payload.board,
+				turn: action.payload.turn
 			};
 		default:
 			return state;

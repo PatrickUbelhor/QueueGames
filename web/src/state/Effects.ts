@@ -1,6 +1,6 @@
 import { Dispatch } from 'react';
 import { Action, initGame, setWebsocketSuccess, updateGame } from './Actions';
-import { IInitTicTacToe, Request, RequestMethod } from './Game.models';
+import { IInitTicTacToe, ITicTacToeState, Request, RequestMethod, SpaceValue } from './Game.models';
 import { IServerResponse, IServerResponseError, IServerResponseInit, IServerResponseUpdate, MessageType } from './Response.models';
 import { IAppState } from './State.models';
 
@@ -47,11 +47,11 @@ function handleGameInitResponse(response: IServerResponseInit, dispatch: Dispatc
 }
 
 function handleGameUpdateResponse(response: IServerResponseUpdate, dispatch: Dispatch<Action>) {
-	dispatch(updateGame(response.state.board));
+	dispatch(updateGame(response.state));
 }
 
 function handleGameErrorResponse(response: IServerResponseError, dispatch: Dispatch<Action>) {
-	dispatch(updateGame(response.state.board));
+	dispatch(updateGame(response.state));
 	console.error('Error %d', response.code);
 }
 
@@ -83,7 +83,13 @@ export const performGameAction = (spaceId: number) => async (dispatch: Dispatch<
 	const gridCopy = getState().grid.slice();
 	gridCopy[spaceId] = getState().letter;
 
-	dispatch(updateGame(gridCopy)); // Locally update grid
+	// Locally update grid
+	const nextState: ITicTacToeState = {
+		board: gridCopy,
+		turn: getState().turn + 1,
+		winner: SpaceValue.NONE
+	};
+	dispatch(updateGame(nextState));
 
 	// Remotely update grid
 	const request: Request = {
