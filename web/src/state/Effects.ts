@@ -41,7 +41,8 @@ function handleGameInitResponse(response: IServerResponseInit, dispatch: Dispatc
 	const initialState: IInitTicTacToe = {
 		lobby: response.lobby,
 		letter: response.state.player,
-		grid: response.state.board
+		board: response.state.board,
+		turn: response.state.turn
 	};
 	dispatch(initGame(initialState));
 }

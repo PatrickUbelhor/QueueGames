@@ -61,10 +61,19 @@ class ConnectedTicTacToe extends React.Component<any, any> {
 			</div>
 		));
 
+		const turnText = (
+			<div className="turn-text">
+				{this.isMyTurn() ? "It's your turn!" : 'Waiting for opponent to take their turn...'}
+			</div>
+		);
+
 		return (
-			<div className="board-wrapper">
-				<div className="board">
-					{spaces}
+			<div>
+				{turnText}
+				<div className="board-wrapper">
+					<div className="board">
+						{spaces}
+					</div>
 				</div>
 			</div>
 		);

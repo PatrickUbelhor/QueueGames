@@ -24,7 +24,8 @@ export interface Request {
 export interface IInitTicTacToe {
 	lobby: string;
 	letter: SpaceValue;
-	grid: SpaceValue[];
+	board: SpaceValue[];
+	turn: number;
 }
 
 export interface ITicTacToeState {

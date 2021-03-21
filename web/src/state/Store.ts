@@ -36,7 +36,7 @@ const reducer = function (state: IAppState = INITIAL_STATE, action: Action): IAp
 				...state,
 				lobby: action.payload.lobby,
 				letter: action.payload.letter,
-				grid: action.payload.grid,
+				grid: action.payload.board,
 				turn: action.payload.turn,
 				isSubscribed: true
 			};
